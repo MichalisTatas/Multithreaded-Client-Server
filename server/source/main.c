@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (serverRun(statisticsPortNum, queryPortNum) == -1) {
+    if (serverRun(statisticsPortNum, queryPortNum, bufferSize) == -1) {
         perror("serverRun failed");
         return -1;
     }

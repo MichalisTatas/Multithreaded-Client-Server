@@ -9,10 +9,10 @@ SDIR = source
 
 EXECUTABLE = server
 
-_DEPS = server.h
+_DEPS = server.h list.h message.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o server.o
+_OBJ = main.o server.o list.o message.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
@@ -27,11 +27,8 @@ run:
 	./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 10
 
 valgrind:
-	valgrind --leak-check=full --show-leak-kinds=all ./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 10
+	valgrind --leak-check=full --show-leak-kinds=all ./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 20
 
 clean:
 	rm -f $(ODIR)/*.o
-	rm -f $(LDIR)/*
-	rm diseaseAggregator
-	rm statistics.txt
-	rm newStatistics.txt
+	rm server
