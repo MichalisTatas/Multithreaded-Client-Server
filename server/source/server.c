@@ -9,7 +9,7 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize)
     // connection with master to get the statistics and save every desc to write queries to them brother
     workerInfoPtr workersList = NULL;
     int counter = 0;
-    int serverStatisticsDesc, clientStatisticsDesc;
+    int serverStatisticsDesc, clientStatisticsDesc, serverQueriesDesc, clientQueriesDesc;
     struct sockaddr_in serverAddress, clientAddress;
     if ((serverStatisticsDesc = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket failed");
@@ -51,6 +51,8 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize)
 
     // ADD COUNTRIES IN LIST???? SO CAN SEND THE QUERIES WHERE THEY SHOULD
     // na dinw kai to port twra wste na kserw se poio kai na thn bazw sto telos gt mporei na exist
+    // apla na tis stelnw mia fora stin arxi poli kaliteri poliplokotita apo proigoumeno ofc 
+
     fd_set readfds;
     workerInfoPtr iterator;
     while (true) {
@@ -100,38 +102,60 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize)
         }
     }
 
+    // printf("BRAKE \n\n\n");
+
+    // iterator = workersList;
+    // while (iterator != NULL) {
+    //     msgDecomposer(iterator->port, "LEL", 20);
+    //     iterator = iterator->next;
+    // }
 
     // HANDLE CLIENT CONNECTIONS
 
     // need to connect to client its a start but  it connects continue when finished with statistics
 
-    // if ((clientStatisticsDesc = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    //     perror("socket failed");
-    //     return -1;
-    // }
+    if ((serverQueriesDesc = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket failed");
+        return -1;
+    }
 
-    // serverAddress.sin_family = AF_INET;
-    // serverAddress.sin_addr.s_addr = INADDR_ANY;
-    // serverAddress.sin_port = htons(queryPortNum);
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_port = htons(queryPortNum);
     
-    // if (bind(clientStatisticsDesc, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
-    //     perror("bind failed");
-    //     return -1;
-    // }
-    // if (listen(clientStatisticsDesc, QSIZE) == -1) {
-    //     perror("listen failed");
-    //     return -1;
-    // }
+    if (bind(serverQueriesDesc, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
+        perror("bind failed");
+        return -1;
+    }
+    if (listen(serverQueriesDesc, QSIZE) == -1) {
+        perror("listen failed");
+        return -1;
+    }
 
-    // int addressSize;
-    // while (true) {
-    //     printf("Waitinng\n");
-    //     addressSize = sizeof(struct sockaddr_in);
-    //     if ((clientStatisticsDesc = accept(clientStatisticsDesc, (struct sockaddr*)&clientAddress, (socklen_t*)&addressSize)) == -1) {
-    //         perror("accept failed");
-    //         return -1;
-    //     }
-    //     printf("Accepted the connection LOSER! \n ");
-    // }
+    addressSize = sizeof(struct sockaddr_in);
+    if ((clientQueriesDesc = accept(serverQueriesDesc, (struct sockaddr*)&clientAddress, (socklen_t*)&addressSize)) == -1) {
+        perror("accept failed");
+        return -1;
+    }
+    printf("Accepted the connection LOSER! \n ");
+
+    sigset_t emptyset;
+    while (true) {
+        // wait for queries LOL
+        FD_ZERO(&readfds);
+        FD_SET(clientQueriesDesc, &readfds);
+
+        sigemptyset(&emptyset);
+        if (pselect(clientQueriesDesc + 1, &readfds, NULL, NULL, NULL, &emptyset) == -1) {
+                perror("pselect failed!");
+                return -1;
+        }
+        if ((msg = msgComposer(clientQueriesDesc, bufferSize)) == NULL) {
+            perror("msgComposer failed");
+            return -1;
+        }
+        printf("client msg : %s \n", msg);
+
+    }
     return 0;
 }

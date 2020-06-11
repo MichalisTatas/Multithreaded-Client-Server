@@ -6,5 +6,8 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <errno.h>
+
 
 int serverRun(int, int, int);
