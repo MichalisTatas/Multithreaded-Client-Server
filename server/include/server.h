@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
+#include <pthread.h>
 
-
-int serverRun(int, int, int);
+int serverRun(int, int, int, int);
+void* threadFunction(void*);

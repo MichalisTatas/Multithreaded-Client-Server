@@ -1,3 +1,10 @@
+probably change statistics so far to do the circular buffer of the gods yeah
+the workers send one byte to say w to know they are workers
+the client sends a c to know its a client
+if it is worker to the statistics stuff
+if it is the client create thread to do the query stuff yeah
+
+
 buffersize isnt needed anymore so probably i can read write the whole thing at once?
 
 master:

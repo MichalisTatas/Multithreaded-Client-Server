@@ -3,6 +3,21 @@
 #include <string.h>
 #include <stdbool.h>
 
+typedef struct QueueNode
+{
+    int fileDesc;
+    struct QueueNode* next;
+} QueueNode;
+typedef QueueNode* QueueNodePtr;
+
+typedef struct queue
+{
+    QueueNodePtr head;
+    QueueNodePtr tail;
+} circularBuffer;
+typedef circularBuffer* circularBufferPtr;
+
+
 typedef struct country {
     char* name;
     struct country* next;
@@ -18,5 +33,16 @@ typedef struct workerInfo
 } workerInfo;
 typedef workerInfo* workerInfoPtr;
 
+typedef struct pthreadArguments 
+{
+    workerInfoPtr workersList;
+    circularBufferPtr circularBuff;
+} pthreadArguments;
+
 workerInfoPtr addPortInList(workerInfoPtr, int);
 int addCountryInList(countryPtr*, char*);
+bool bufferEmpty(circularBufferPtr);
+void bufferDestroy(circularBufferPtr);
+void bufferInit(circularBufferPtr);
+void bufferInsert(circularBufferPtr, int);
+int bufferRemove(circularBufferPtr);

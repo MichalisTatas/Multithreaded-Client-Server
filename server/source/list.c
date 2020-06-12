@@ -41,3 +41,67 @@ int addCountryInList(countryPtr* head, char* countryName)
     *head = cntry;
     return 0;
 }
+
+void bufferInit(circularBufferPtr Q)
+{
+    Q->head = NULL;
+    Q->tail = NULL;
+}
+
+bool bufferEmpty(circularBufferPtr Q)
+{
+    if (Q->head == NULL)
+        return true;
+    return false;
+}
+
+void bufferInsert(circularBufferPtr Q, int desc)
+{
+    QueueNodePtr temp = malloc(sizeof(QueueNode));
+
+    if (temp == NULL) {
+        printf("system has no more space\n");
+        return ;
+    }
+
+    temp->fileDesc = desc;
+
+    temp->next = NULL;
+    if (Q->tail == NULL) {
+        Q->head = temp;
+        Q->tail = temp;
+    }
+    else {
+        Q->tail->next = temp;
+        Q->tail = temp;
+    }
+}
+
+int bufferRemove(circularBufferPtr Q)
+{
+    QueueNodePtr temp;
+
+    if(Q->head == NULL) {
+        return -1;
+    }
+    else {
+        temp = Q->head;
+        Q->head = temp->next;
+        if (Q->head == NULL)
+            Q->tail = NULL;
+        int desc = temp->fileDesc;
+        free(temp);
+        return desc;
+    }
+}
+
+void QDestroy(circularBufferPtr Q)
+{
+    QueueNodePtr temp;
+    while (Q->head != NULL) {
+        temp = Q->head;
+        Q->head = Q->head->next;
+        free(temp);
+    }
+    free(Q);
+}

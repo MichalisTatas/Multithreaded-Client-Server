@@ -65,5 +65,25 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
         return -1;
     }
 
+    while(true){
+        // msgDecomposer(sock, "geika eima ito query", 20);
+        // sleep(1);
+    }
+
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

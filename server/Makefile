@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g3 -Wall -Wextra
+CFLAGS = -g3 -Wall -Wextra -pthread
 LDFLAGS = 
 
 BDIR = bin
