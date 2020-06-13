@@ -1,4 +1,65 @@
 #include "../include/client.h"
+#include "../include/queue.h"
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+pthread_cond_t conditionVariable = PTHREAD_COND_INITIALIZER; 
+
+typedef struct arguments
+{
+    QueuePtr Q;
+    int servPort;
+    char* servIP;
+} arguments;
+typedef arguments* argumentsPtr;
+
+char* msgComposer(int fileDescriptor, int bufferSize)
+{
+    char msgSizeArray[12] = {0};
+    char* buffer[bufferSize];
+    char* msg;
+
+
+    for (int i=0; i<12/bufferSize; i++) {
+        if (read(fileDescriptor, buffer, bufferSize) == -1) {
+            perror("read failed");
+            return NULL;
+        }
+        memcpy(msgSizeArray + i*bufferSize, buffer, bufferSize); //bufferSize?
+    }
+
+    if ((12 % bufferSize)) {
+        if (read(fileDescriptor, buffer, 12 - bufferSize*(12 / bufferSize)) == -1) {
+            perror("read failed");
+            return NULL;
+        }
+        memcpy(msgSizeArray + bufferSize * (12 / bufferSize), buffer, 12 - bufferSize * (12 / bufferSize));
+    }
+
+    int msgSize = strtol(msgSizeArray, NULL, 10);
+    if ((msg = malloc(msgSize)) == NULL) {      // +1 ???
+        perror("malloc failed!");
+        return NULL;
+    }
+
+    for (int i=0; i<msgSize/bufferSize; i++) {
+        if (read(fileDescriptor, buffer, bufferSize) == -1) {
+            perror("read failed");
+            return NULL;
+        }
+        memcpy(msg + i*bufferSize, buffer, bufferSize);
+    }
+
+    if (msgSize % bufferSize) {
+        if (read(fileDescriptor, buffer, msgSize - bufferSize*(msgSize / bufferSize) ) == -1) {
+            perror("read failed");
+            return NULL;
+        }
+        memcpy(msg + bufferSize*(msgSize / bufferSize), buffer, msgSize - bufferSize*(msgSize / bufferSize));
+    }
+
+    return msg;
+}
 
 int msgDecomposer(int fileDescriptor, char* msg, int bufferSize)
 {
@@ -38,38 +99,111 @@ int msgDecomposer(int fileDescriptor, char* msg, int bufferSize)
     return 0;
 }
 
-int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
+
+void* threadFunction(void* argument)
 {
+    argumentsPtr arg = (argumentsPtr)argument;
+    char* msg;
     int sock;
+
+    pthread_mutex_lock(&mutex);
+    pthread_cond_wait(&conditionVariable, &mutex);
+    pthread_mutex_unlock(&mutex);
+
     struct sockaddr_in serverAddress;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket failed");
-        return -1;
+        return NULL;
     }
 
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(servPort);
+    serverAddress.sin_port = htons(arg->servPort);
 
-    if (inet_pton(AF_INET, servIP, &serverAddress.sin_addr) == -1) {
+    if (inet_pton(AF_INET, arg->servIP, &serverAddress.sin_addr) == -1) {
         perror("invalid address");
-        return -1;
+        return NULL;
     }
 
     if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
         perror("connect failed");
+        return NULL;
+    }
+
+    while (true) {
+        pthread_mutex_lock(&mutex);
+        if ((msg = QRemove(arg->Q)) == NULL){
+            msgDecomposer(sock, "finished!", 20);
+            pthread_mutex_unlock(&mutex);
+            pthread_exit(0);
+        }
+        pthread_mutex_unlock(&mutex);
+        if (msg != NULL) {
+            printf("%s \n", msg);
+            msgDecomposer(sock, msg, 20);
+        }
+    }
+}
+
+int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
+{
+    FILE* filePtr;
+    if ((filePtr = fopen(queryFile, "r")) == NULL) {
+        perror("fopen failed");
         return -1;
     }
+    char* line = NULL;
+    size_t len = 0;
+    argumentsPtr arg = malloc(sizeof(arguments));
+    arg->Q = malloc(sizeof(Queue));
+    QInit(arg->Q);
+    arg->servPort = servPort;
+    arg->servIP = malloc(strlen(servIP) + 1);
+    strcpy(arg->servIP, servIP);
 
-    if (msgDecomposer(sock, "geika eima ito query", 20) == -1) {
-        printf("msgDecomposer failed\n");
-        return -1;
+    while(getline(&line, &len, filePtr) != -1) {
+        QInsert(arg->Q, line);
     }
 
-    while(true){
-        // msgDecomposer(sock, "geika eima ito query", 20);
-        // sleep(1);
-    }
+    pthread_t threadsArray[numThreads];
+    for (int i=0; i<numThreads; i++)
+        pthread_create(&threadsArray[i], NULL, threadFunction, (void*)arg);
 
+    // int sock;
+    // char* msg;
+    // struct sockaddr_in serverAddress;
+    // if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    //     perror("socket failed");
+    //     return -1;
+    // }
+
+    // serverAddress.sin_family = AF_INET;
+    // serverAddress.sin_port = htons(servPort);
+
+    // if (inet_pton(AF_INET, servIP, &serverAddress.sin_addr) == -1) {
+    //     perror("invalid address");
+    //     return -1;
+    // }
+
+    // if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
+    //     perror("connect failed");
+    //     return -1;
+    // }
+
+    // // while((msg=QRemove(arg->Q)) != NULL)
+    //     // msgDecomposer(sock, "tata", 20);
+    // msgDecomposer(sock, "tatat", 20);
+    sleep(0.2);           // sleep to make sure all threads lock on the condition variable
+    pthread_cond_broadcast(&conditionVariable);
+
+    for (int i=0; i<numThreads; i++){
+        if (pthread_join(threadsArray[i], NULL) != 0) {
+            perror("pthread_join failed");
+            return -1;
+        }
+    }
+    fclose(filePtr);
+    free(line);
+    // free(Q);
     return 0;
 }
 

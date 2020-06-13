@@ -1,3 +1,11 @@
+
+****FIUND BETTER WAY TO LOCK ALL THE THREADS THAN SLEEPING 5 TO MAKE SURE EVERYTHING IS LOCKED
+
+for some reason it doesnt read all the messages or what it prints
+just the first one investigate that after client
+
+
+
 probably change statistics so far to do the circular buffer of the gods yeah
 the workers send one byte to say w to know they are workers
 the client sends a c to know its a client
@@ -5,10 +13,11 @@ if it is worker to the statistics stuff
 if it is the client create thread to do the query stuff yeah
 
 
-buffersize isnt needed anymore so probably i can read write the whole thing at once?
+buffersize isnt needed anymore so probably i can read write the whole thing
+at once?
 
 master:
-	-refactored completely i think kids gets new data  ready to sent statistics to server
+	- refactored completely i think kids gets new data  ready to sent statistics to server
 	- have to find a way so that every workere must have unique port to seent to server so that
 	  server camn talk back for queriesa
 

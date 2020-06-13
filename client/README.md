@@ -1,5 +1,6 @@
-read the file 
-create numThreads and assign one line to each
-block every thread
-when stop assigning unblock
-then do the same thing for every "wave" until queriues 
+loliten listen
+
+read file
+fill q until numThreads
+release mutex
+keep filling q and let the children play

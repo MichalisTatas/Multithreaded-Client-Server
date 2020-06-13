@@ -10,20 +10,22 @@ pthread_cond_t conditionVariable = PTHREAD_COND_INITIALIZER;
 
 void* threadFunction(void* argument)
 {
-    int number;
-    char* msg;
+    int descriptor;
+    char* msg = " ";
     pthreadArguments* parameters = (pthreadArguments*)argument;
     while (true) {
         pthread_mutex_lock(&mutex);
-        if ((number = bufferRemove(parameters->circularBuff)) == -1) {
+        if ((descriptor = bufferRemove(parameters->circularBuff)) == -1) {
             pthread_cond_wait(&conditionVariable, &mutex);
-            number = bufferRemove(parameters->circularBuff);
-            // printf("%d \n", number);
+            descriptor = bufferRemove(parameters->circularBuff);
+            
         }
-        // printf("%d \n", number);
         pthread_mutex_unlock(&mutex);
-        if (number != -1) {
-            printf("%d \n", number);
+        if (descriptor != -1) {
+            while(strcmp(msg, "finished!") != 0) {
+                msg = msgComposer(descriptor, 20);
+                printf("dsdsad %s \n", msg);
+            }
         }
     }
 }
@@ -43,9 +45,8 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
     bufferInit(parameters->circularBuff);
     parameters->workersList = NULL;
 
-    for (int i=0; i<numThreads; i++) {
+    for (int i=0; i<numThreads; i++)
         pthread_create(&threadsArray[i], NULL, threadFunction, (void*)parameters);
-    }
 
 
     // get the port for statistics ready
@@ -109,7 +110,6 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
                 perror("accept failed");
                 return -1;
             }
-            // check whether pop works
             pthread_mutex_lock(&mutex);
             bufferInsert(parameters->circularBuff, clientStatisticsDesc);
             pthread_cond_signal(&conditionVariable);
@@ -120,9 +120,8 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
                 perror("accept failed");
                 return -1;
             }
-            // check whether pop works
             pthread_mutex_lock(&mutex);
-            bufferInsert(parameters->circularBuff, serverQueriesDesc);
+            bufferInsert(parameters->circularBuff, clientQueriesDesc);
             pthread_cond_signal(&conditionVariable);
             pthread_mutex_unlock(&mutex);
         }
@@ -131,7 +130,12 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
 
 
 
-
+    for (int i=0; i<numThreads; i++){
+        if (pthread_join(threadsArray[i], NULL) != 0) {
+            perror("pthread_join failed");
+            return -1;
+        }
+    }
 
 
 

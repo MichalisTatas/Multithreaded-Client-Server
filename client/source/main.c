@@ -49,5 +49,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    free(queryFile);
+    free(servIP);
     return 0;
 }

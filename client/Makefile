@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g3 -Wall -Wextra
+CFLAGS = -g3 -Wall -Wextra -pthread
 LDFLAGS = 
 
 BDIR = bin
@@ -9,10 +9,10 @@ SDIR = source
 
 EXECUTABLE = client
 
-_DEPS = client.h
+_DEPS = client.h queue.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o client.o
+_OBJ = main.o client.o queue.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
