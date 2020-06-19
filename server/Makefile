@@ -9,10 +9,10 @@ SDIR = source
 
 EXECUTABLE = server
 
-_DEPS = server.h list.h message.h
+_DEPS = server.h list.h message.h queriesHandling.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o server.o list.o message.o
+_OBJ = main.o server.o list.o message.o queriesHandling.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)

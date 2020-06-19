@@ -69,14 +69,14 @@ int msgDecomposer(int fileDescriptor, char* msg, int bufferSize)
 
     for (int i=0; i<12/bufferSize; i++) {
         if (write(fileDescriptor,  numBuff + i*bufferSize, bufferSize) == -1) {
-            perror("write failed");
+            perror("write client failed");
             return -1;
         }
     }
 
     if (12 % bufferSize) {
         if (write(fileDescriptor, numBuff + (12 - 12 % bufferSize), 12 - bufferSize*(12 / bufferSize)) == -1) {
-            perror("write failed");
+            perror("write client failed");
             return -1;
         }
     }
@@ -84,14 +84,14 @@ int msgDecomposer(int fileDescriptor, char* msg, int bufferSize)
 
     for (int i=0; i<msgSize/bufferSize; i++) {
         if (write(fileDescriptor, msg + i*bufferSize , bufferSize) == -1) {
-            perror("write failed");
+            perror("write client failed");
             return -1;
         }
     }
 
     if (msgSize % bufferSize) {
         if (write(fileDescriptor, msg + ( msgSize - msgSize % bufferSize) , msgSize - bufferSize*(msgSize / bufferSize)) == -1) {
-            perror("write failed");
+            perror("write client failed");
             return -1;
         }
     }
@@ -129,6 +129,9 @@ void* threadFunction(void* argument)
         return NULL;
     }
 
+    // send a "c" so the server can recognize its from the client
+    msgDecomposer(sock, "c", 20);
+
     while (true) {
         pthread_mutex_lock(&mutex);
         if ((msg = QRemove(arg->Q)) == NULL){
@@ -161,6 +164,7 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
     strcpy(arg->servIP, servIP);
 
     while(getline(&line, &len, filePtr) != -1) {
+        line = strtok(line, "\n");
         QInsert(arg->Q, line);
     }
 
@@ -168,30 +172,6 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
     for (int i=0; i<numThreads; i++)
         pthread_create(&threadsArray[i], NULL, threadFunction, (void*)arg);
 
-    // int sock;
-    // char* msg;
-    // struct sockaddr_in serverAddress;
-    // if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    //     perror("socket failed");
-    //     return -1;
-    // }
-
-    // serverAddress.sin_family = AF_INET;
-    // serverAddress.sin_port = htons(servPort);
-
-    // if (inet_pton(AF_INET, servIP, &serverAddress.sin_addr) == -1) {
-    //     perror("invalid address");
-    //     return -1;
-    // }
-
-    // if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
-    //     perror("connect failed");
-    //     return -1;
-    // }
-
-    // // while((msg=QRemove(arg->Q)) != NULL)
-    //     // msgDecomposer(sock, "tata", 20);
-    // msgDecomposer(sock, "tatat", 20);
     sleep(0.2);           // sleep to make sure all threads lock on the condition variable
     pthread_cond_broadcast(&conditionVariable);
 

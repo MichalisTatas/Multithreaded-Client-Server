@@ -1,12 +1,51 @@
 #include "../include/server.h"
-#include "../include/message.h"
-#include "../include/list.h"
 
 #define QSIZE 2
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t conditionVariable = PTHREAD_COND_INITIALIZER; 
+
+int workerFunction(pthreadArguments* parameters, int descriptor)
+{
+    char* msg = msgComposer(descriptor, 20);
+    int port = atoi(msg);
+
+    workerInfoPtr worker = NULL;
+    worker = addPortInList(worker, port);
+
+    while (true) {
+        if (!strcmp((msg = msgComposer(descriptor, 20)), "finished writing countries!"))
+            break;
+        addCountryInList(&worker->countriesList, msg);
+    }
+    pthread_mutex_lock(&mutex);
+    worker->next = parameters->workersList;
+    parameters->workersList = worker;
+    pthread_mutex_unlock(&mutex);
+
+    while (true) {
+        if (!strcmp((msg = msgComposer(descriptor, 20)), "finished!"))
+            break;
+        // printf("%s \n",msg);  // print the statistics or not?
+    }
+    return 0;
+}
+
+int clientFunction(pthreadArguments* parameters, int descriptor)
+{
+    char* msg = " ";
+    int sock;
+
+    while (true) {
+        if (!strcmp((msg = msgComposer(descriptor, 20)), "finished!"))
+            break;
+        queriesHandler(parameters->workersList, msg, 20);
+            // write(sock, msg, 200);
+        // }
+    }
+    return 0;
+}
 
 void* threadFunction(void* argument)
 {
@@ -18,13 +57,21 @@ void* threadFunction(void* argument)
         if ((descriptor = bufferRemove(parameters->circularBuff)) == -1) {
             pthread_cond_wait(&conditionVariable, &mutex);
             descriptor = bufferRemove(parameters->circularBuff);
-            
         }
         pthread_mutex_unlock(&mutex);
         if (descriptor != -1) {
-            while(strcmp(msg, "finished!") != 0) {
-                msg = msgComposer(descriptor, 20);
-                printf("dsdsad %s \n", msg);
+            msg = msgComposer(descriptor, 20);
+            if (!strcmp(msg, "w")) {
+                printf("worker\n");
+                workerFunction(parameters, descriptor);
+            }
+            else if (!strcmp(msg, "c")) {
+                printf("client\n");
+                clientFunction(parameters, descriptor);
+            }
+            else {
+                printf("error in thread function!");
+                return NULL;
             }
         }
     }
@@ -36,9 +83,7 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
     struct sockaddr_in serverStatisticsAddress, clientStatisticsAddress;
     struct sockaddr_in serverQueriesAddress, clientQueriesAddress;
     int addressSize = sizeof(struct sockaddr_in);
-    int counter = 0;
     fd_set readfds;
-    char* msg;
     pthread_t threadsArray[numThreads];
     pthreadArguments* parameters = malloc(sizeof(pthreadArguments));
     parameters->circularBuff = malloc(sizeof(circularBuffer));
@@ -93,8 +138,6 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
     else
         max = serverQueriesDesc;
 
-    workerInfoPtr iterator;
-
     while (true) {
         FD_ZERO(&readfds);
         FD_SET(serverQueriesDesc, &readfds);
@@ -104,6 +147,26 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
             perror("pselect failed!");
             return -1;
         }
+
+        // workerInfoPtr i = parameters->workersList;
+        
+        // countryPtr c;
+        // while (i!= NULL){
+        //     c=i->countriesList;
+        //     while(c!=NULL) {
+        //         printf("port %d , %s", i->port, c->name);
+        //         c=c->next;
+        //     }
+        //     printf("\n");
+        //     i=i->next;
+        // }
+        // workerInfoPtr it = parameters->workersList;
+        // while (it != NULL) {
+        //         msgDecomposer(it->port, "geia", 20);
+
+        //     it = it->next;
+        // }
+        
 
         if (FD_ISSET(serverStatisticsDesc, &readfds)) {            
             if ((clientStatisticsDesc = accept(serverStatisticsDesc, (struct sockaddr*)&clientStatisticsAddress, (socklen_t*)&addressSize)) == -1) {
@@ -115,7 +178,7 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
             pthread_cond_signal(&conditionVariable);
             pthread_mutex_unlock(&mutex);
         }
-        else {
+        else if (FD_ISSET(serverQueriesDesc, &readfds)) {
             if ((clientQueriesDesc = accept(serverQueriesDesc, (struct sockaddr*)&clientQueriesAddress, (socklen_t*)&addressSize)) == -1) {
                 perror("accept failed");
                 return -1;
@@ -137,111 +200,5 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
         }
     }
 
-
-
-
-
-
-    // addressSize = sizeof(struct sockaddr_in);
-    // if ((clientQueriesDesc = accept(serverQueriesDesc, (struct sockaddr*)&clientQueriesAddress, (socklen_t*)&addressSize)) == -1) {
-    //     perror("accept failed");
-    //     return -1;
-    // }
-
-
-
-
-    // get all descriptors put them in list and then whiule (true) with pselect and its over
-    // while (true) {
-    //     printf("Waitinng\n");
-    //     addressSize = sizeof(struct sockaddr_in);
-    //     if ((clientStatisticsDesc = accept(serverStatisticsDesc, (struct sockaddr*)&clientStatisticsAddress, (socklen_t*)&addressSize)) == -1) {
-    //         perror("accept failed");
-    //         return -1;
-    //     }
-    //     counter++;
-    //     workersList = addPortInList(workersList, clientStatisticsDesc);
-    //     msg = msgComposer(clientStatisticsDesc, 20);
-    //     if (counter == atoi(msg))
-    //         break;
-    // }
-
-    // get the statistics
-
-    // ADD COUNTRIES IN LIST???? SO CAN SEND THE QUERIES WHERE THEY SHOULD
-    // na dinw kai to port twra wste na kserw se poio kai na thn bazw sto telos gt mporei na exist
-    // apla na tis stelnw mia fora stin arxi poli kaliteri poliplokotita apo proigoumeno ofc 
-
-
-    // workerInfoPtr iterator;
-    // while (true) {
-    //     FD_ZERO(&readfds);
-    //     iterator = workersList;
-    //     int max = 0;
-    //     while (iterator != NULL) {
-    //         FD_SET(iterator->port, &readfds);
-    //         if (iterator->port > max)
-    //             max = iterator->port;
-    //         iterator = iterator->next;
-    //     }
-
-    //     if (pselect(max + 1, &readfds, NULL, NULL, NULL, NULL) == -1) {
-    //         perror("pselect failed!");
-    //         return -1;
-    //     }
-
-    //     iterator = workersList;
-    //      while (iterator != NULL) {
-    //         if (FD_ISSET(iterator->port, &readfds)) {
-    //             if ((msg = msgComposer(iterator->port, bufferSize)) == NULL) {
-    //                 perror("msgComposer failed");
-    //                 return -1;
-    //             }
-                
-    //             if (!strcmp(msg, "finished!")) {
-    //                 iterator->readyForWork = true;
-    //                 free(msg);
-    //                 break;
-    //             }
-
-    //             printf("%s \n", msg);
-    //             free(msg);
-    //         }
-    //         iterator = iterator->next;
-    //     }
-    //     iterator = workersList;
-    //     bool allReady=true;
-    //     while (iterator != NULL) {
-    //         if (iterator->readyForWork == false)
-    //             allReady = false;
-    //         iterator = iterator->next;
-    //     }
-    //     if (allReady) {
-    //         break;
-    //     }
-    // }
-
-    
-
-    // while (true) {
-    //     FD_ZERO(&readfds);
-    //     FD_SET(clientQueriesDesc, &readfds);
-
-    //     if (pselect(clientQueriesDesc + 1, &readfds, NULL, NULL, NULL, NULL) == -1) {
-    //             perror("pselect failed!");
-    //             return -1;
-    //     }
-    //     if ((msg = msgComposer(clientQueriesDesc, 20)) == NULL) {
-    //         perror("msgComposer failed");
-    //         return -1;
-    //     }
-
-    //     iterator = workersList;
-    //     while ( iterator!= NULL) {
-    //         msgDecomposer(iterator->port, msg, 20);
-    //         iterator=iterator->next;
-    //     }
-
-    // }
     return 0;
 }

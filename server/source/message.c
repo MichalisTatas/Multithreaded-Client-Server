@@ -8,14 +8,14 @@ int msgDecomposer(int fileDescriptor, char* msg, int bufferSize)
 
     for (int i=0; i<12/bufferSize; i++) {
         if (write(fileDescriptor,  numBuff + i*bufferSize, bufferSize) == -1) {
-            perror("write failed");
+            perror("write server failed");
             return -1;
         }
     }
 
     if (12 % bufferSize) {
         if (write(fileDescriptor, numBuff + (12 - 12 % bufferSize), 12 - bufferSize*(12 / bufferSize)) == -1) {
-            perror("write failed");
+            perror("write server failed");
             return -1;
         }
     }
@@ -23,14 +23,14 @@ int msgDecomposer(int fileDescriptor, char* msg, int bufferSize)
 
     for (int i=0; i<msgSize/bufferSize; i++) {
         if (write(fileDescriptor, msg + i*bufferSize , bufferSize) == -1) {
-            perror("write failed");
+            perror("write server failed");
             return -1;
         }
     }
 
     if (msgSize % bufferSize) {
         if (write(fileDescriptor, msg + ( msgSize - msgSize % bufferSize) , msgSize - bufferSize*(msgSize / bufferSize)) == -1) {
-            perror("write failed");
+            perror("write server failed");
             return -1;
         }
     }
