@@ -143,6 +143,10 @@ void* threadFunction(void* argument)
         if (msg != NULL) {
             printf("%s \n", msg);
             msgDecomposer(sock, msg, 20);
+            printf("prin \n");
+            msg = msgComposer(sock, 20);
+            printf("meta\n");
+            printf("%s \n", msg);
         }
     }
 }

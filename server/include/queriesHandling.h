@@ -13,5 +13,5 @@
 int querieAnswer(workerInfoPtr, const char* querie, int, int);
 void sendQuerie(workerInfoPtr, const char*, int, int);
 int queriesHandler(workerInfoPtr,const char*, int);
-int selectWorker(const workerInfoPtr, char*, char*);
+int selectWorker(const workerInfoPtr, char*);
 void listCountriesFunction(workerInfoPtr);

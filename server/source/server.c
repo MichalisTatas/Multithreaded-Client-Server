@@ -35,14 +35,13 @@ int workerFunction(pthreadArguments* parameters, int descriptor)
 int clientFunction(pthreadArguments* parameters, int descriptor)
 {
     char* msg = " ";
-    int sock;
 
     while (true) {
         if (!strcmp((msg = msgComposer(descriptor, 20)), "finished!"))
             break;
         queriesHandler(parameters->workersList, msg, 20);
-            // write(sock, msg, 200);
-        // }
+        msgDecomposer(descriptor, "geia", 20);
+        // sleep(2);
     }
     return 0;
 }
@@ -147,26 +146,6 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
             perror("pselect failed!");
             return -1;
         }
-
-        // workerInfoPtr i = parameters->workersList;
-        
-        // countryPtr c;
-        // while (i!= NULL){
-        //     c=i->countriesList;
-        //     while(c!=NULL) {
-        //         printf("port %d , %s", i->port, c->name);
-        //         c=c->next;
-        //     }
-        //     printf("\n");
-        //     i=i->next;
-        // }
-        // workerInfoPtr it = parameters->workersList;
-        // while (it != NULL) {
-        //         msgDecomposer(it->port, "geia", 20);
-
-        //     it = it->next;
-        // }
-        
 
         if (FD_ISSET(serverStatisticsDesc, &readfds)) {            
             if ((clientStatisticsDesc = accept(serverStatisticsDesc, (struct sockaddr*)&clientStatisticsAddress, (socklen_t*)&addressSize)) == -1) {

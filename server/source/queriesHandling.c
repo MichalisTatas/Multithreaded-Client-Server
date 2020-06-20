@@ -4,6 +4,8 @@ void sendQuerie(workerInfoPtr workersList, const char* querie, int writeDesc, in
 {
     char* temp = malloc(strlen(querie) + 1);
     strcpy(temp, querie);
+
+    workerInfoPtr descriptorList = NULL;
     workerInfoPtr iterator = workersList;
     int sock;
     struct sockaddr_in serverAddress;
@@ -17,7 +19,7 @@ void sendQuerie(workerInfoPtr workersList, const char* querie, int writeDesc, in
         serverAddress.sin_family = AF_INET;
         serverAddress.sin_port = htons(writeDesc);
 
-        if (inet_pton(AF_INET, "127.0.0.1", &serverAddress.sin_addr) == -1) {
+        if (inet_pton(AF_INET, "0.0.0.0", &serverAddress.sin_addr) == -1) {
             perror("invalid address");
             return;
         }
@@ -26,7 +28,7 @@ void sendQuerie(workerInfoPtr workersList, const char* querie, int writeDesc, in
             perror("connect failed");
             return;
         }
-        msgDecomposer(writeDesc, temp, bufferSize);
+        msgDecomposer(sock, temp, bufferSize);
     }
     else {                                          // if querie needs to be sent to all workers
         while (iterator != NULL) {
@@ -38,22 +40,26 @@ void sendQuerie(workerInfoPtr workersList, const char* querie, int writeDesc, in
             serverAddress.sin_family = AF_INET;
             serverAddress.sin_port = htons(iterator->port);
 
-            if (inet_pton(AF_INET, "127.0.0.1", &serverAddress.sin_addr) == -1) {
+            if (inet_pton(AF_INET, "0.0.0.0", &serverAddress.sin_addr) == -1) {
                 perror("invalid address");
                 return;
             }
-
-        printf("eimaaie edw\n");
 
             if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
                 perror("connect failed");
                 return;
             }
 
-            // msgDecomposer(iterator->port, temp, bufferSize); // iteratror port?>????
+            msgDecomposer(sock, temp, bufferSize); // iteratror port?>????
+            // char*  t;
+            // t=msgComposer(sock, 20);
+            // printf("%s \n",t);
+            descriptorList = addPortInList(descriptorList, sock);
+
             iterator->readyForWork = false;
             iterator = iterator->next;
         }
+        querieAnswer(descriptorList, "/diseaseFrequency", -1, 20);
     }
     free(temp);
 }
@@ -71,7 +77,7 @@ int querieAnswer(workerInfoPtr workersList, const char* querie, int readDesc, in
     workerInfoPtr iterator = workersList;
     int diseaseFrequency = 0;
 
-    if (iterator != NULL) {
+    if (workersList != NULL) {
         while(true) {
             FD_ZERO(&readfds);
             iterator = workersList;
@@ -99,7 +105,7 @@ int querieAnswer(workerInfoPtr workersList, const char* querie, int readDesc, in
                         perror("msgComposer failed");
                         return -1;
                     }
-                    
+
                     if (!strcmp(msg, "finished!")) {
                         iterator->readyForWork = true;
                         free(msg);
@@ -154,18 +160,15 @@ int queriesHandler(workerInfoPtr workersList,const char* querie, int bufferSize)
     wordexp_t p;
     wordexp(querie, &p, 0);
 
-    printf("client %s \n", querie);
-
-
     if (!strcmp(p.we_wordv[0], "/diseaseFrequency")) {
         if (p.we_wordc == 4) {
             sendQuerie(workersList, querie, -1, bufferSize);
             // querieAnswer(workersList, p.we_wordv[0], -1, bufferSize);
         }
-        // else if (p.we_wordc == 5) {
-        //     sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[4], "write"), bufferSize);
-        //     querieAnswer(NULL, p.we_wordv[0], selectWorker(workersList, p.we_wordv[4], "read"), bufferSize);
-        // }
+        else if (p.we_wordc == 5) {
+            sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[4]), bufferSize);
+            // querieAnswer(NULL, p.we_wordv[0], selectWorker(workersList, ), bufferSize);
+        }
         else {
             printf("number of arguments is not right! \n");
             wordfree(&p);
@@ -174,8 +177,8 @@ int queriesHandler(workerInfoPtr workersList,const char* querie, int bufferSize)
     }
     else if (!strcmp(p.we_wordv[0], "/topk-AgeRanges")) {
         if (p.we_wordc == 6) {
-            sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[2], "write"), bufferSize);
-            // querieAnswer(NULL, querie, selectWorker(workersList, p.we_wordv[2], "read"), bufferSize);
+            sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[2]), bufferSize);
+            // querieAnswer(NULL, querie, descriptor, bufferSize);
         }
         else {
             printf("number of arguments is not right! \n");
@@ -186,7 +189,7 @@ int queriesHandler(workerInfoPtr workersList,const char* querie, int bufferSize)
     else if (!strcmp(p.we_wordv[0], "/searchPatientRecord")) {
         if (p.we_wordc == 2) {
             sendQuerie(workersList, querie, -1, bufferSize);
-            // querieAnswer(workersList, querie, -1, bufferSize);
+            // querieAnswer(workersList, querie, descriptor, bufferSize);
         }
         else {
             printf("number of arguments is not right! \n");
@@ -197,12 +200,12 @@ int queriesHandler(workerInfoPtr workersList,const char* querie, int bufferSize)
     else if (!strcmp(p.we_wordv[0], "/numPatientAdmissions")) {
         if (p.we_wordc == 4) {
             sendQuerie(workersList, querie, -1, bufferSize);
-            // querieAnswer(workersList, querie, -1, bufferSize);
+            // querieAnswer(workersList, querie, descriptor, bufferSize);
         }
-        // else if (p.we_wordc == 5) {
-        //     sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[4], "write"), bufferSize);
-        //     querieAnswer(NULL, querie, selectWorker(workersList, p.we_wordv[4], "read"), bufferSize);
-        // }
+        else if (p.we_wordc == 5) {
+            sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[4]), bufferSize);
+            // querieAnswer(NULL, querie, descriptor, bufferSize);
+        }
         else {
             printf("number of arguments is not right! \n");
             wordfree(&p);
@@ -212,12 +215,12 @@ int queriesHandler(workerInfoPtr workersList,const char* querie, int bufferSize)
     else if (!strcmp(p.we_wordv[0], "/numPatientDischarges")) {
         if (p.we_wordc == 4) {
             sendQuerie(workersList, querie, -1, bufferSize);
-            // querieAnswer(workersList, querie, -1, bufferSize);
+            // querieAnswer(workersList, querie, descriptor, bufferSize);
         }
-        // else if (p.we_wordc == 5) {
-        //     sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[4], "write"), bufferSize);
-        //     querieAnswer(NULL, querie, selectWorker(workersList, p.we_wordv[4], "read"), bufferSize);
-        // }
+        else if (p.we_wordc == 5) {
+            sendQuerie(NULL, querie, selectWorker(workersList, p.we_wordv[4]), bufferSize);
+            // querieAnswer(NULL, querie, descriptor, bufferSize);
+        }
         else {
             printf("number of arguments is not right! \n");
             wordfree(&p);
@@ -244,7 +247,7 @@ int queriesHandler(workerInfoPtr workersList,const char* querie, int bufferSize)
     return 0;
 }
 
-int selectWorker(const workerInfoPtr workersList, char* country, char* rdwr) // returns readDesc of worker which handles the country
+int selectWorker(const workerInfoPtr workersList, char* country) 
 {
     workerInfoPtr iterator = workersList;
     countryPtr countryIterator;

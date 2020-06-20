@@ -1,4 +1,4 @@
-PREPEI NA DW IP WORKER STO PIAZZA PPOLI SWSTO
+PREPEI NA DW IP WORKER na to stelnw oci 0.0.0.0
 
 kati paoize me fd tou master
 
