@@ -13,6 +13,8 @@ typedef QueueNode* QueueNodePtr;
 
 typedef struct queue
 {
+    int maxBufferSize;
+    int currentSize;
     QueueNodePtr head;
     QueueNodePtr tail;
 } circularBuffer;
@@ -29,6 +31,7 @@ typedef struct workerInfo
 {
     int port;
     countryPtr countriesList;
+    char* ipAddress;
     bool readyForWork;
     struct workerInfo* next;
 } workerInfo;

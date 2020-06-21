@@ -1,6 +1,6 @@
 #include "../include/server.h"
 
-#define QSIZE 2
+#define QSIZE 100
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -27,7 +27,7 @@ int workerFunction(pthreadArguments* parameters, int descriptor)
     while (true) {
         if (!strcmp((msg = msgComposer(descriptor, 20)), "finished!"))
             break;
-        // printf("%s \n",msg);  // print the statistics or not?
+        printf("%s \n",msg);  // print the statistics or not?
     }
     return 0;
 }
@@ -39,9 +39,7 @@ int clientFunction(pthreadArguments* parameters, int descriptor)
     while (true) {
         if (!strcmp((msg = msgComposer(descriptor, 20)), "finished!"))
             break;
-        queriesHandler(parameters->workersList, msg, 20);
-        msgDecomposer(descriptor, "geia", 20);
-        // sleep(2);
+        queriesHandler(parameters->workersList, msg, descriptor);
     }
     return 0;
 }
@@ -60,14 +58,10 @@ void* threadFunction(void* argument)
         pthread_mutex_unlock(&mutex);
         if (descriptor != -1) {
             msg = msgComposer(descriptor, 20);
-            if (!strcmp(msg, "w")) {
-                printf("worker\n");
+            if (!strcmp(msg, "w"))
                 workerFunction(parameters, descriptor);
-            }
-            else if (!strcmp(msg, "c")) {
-                printf("client\n");
+            else if (!strcmp(msg, "c"))
                 clientFunction(parameters, descriptor);
-            }
             else {
                 printf("error in thread function!");
                 return NULL;
@@ -87,6 +81,8 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
     pthreadArguments* parameters = malloc(sizeof(pthreadArguments));
     parameters->circularBuff = malloc(sizeof(circularBuffer));
     bufferInit(parameters->circularBuff);
+    parameters->circularBuff->maxBufferSize = bufferSize;
+    parameters->circularBuff->currentSize = 0;
     parameters->workersList = NULL;
 
     for (int i=0; i<numThreads; i++)

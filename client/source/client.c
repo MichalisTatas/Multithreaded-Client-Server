@@ -3,6 +3,8 @@
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+pthread_mutex_t mutexPrint = PTHREAD_MUTEX_INITIALIZER;
+
 pthread_cond_t conditionVariable = PTHREAD_COND_INITIALIZER; 
 
 typedef struct arguments
@@ -104,6 +106,7 @@ void* threadFunction(void* argument)
 {
     argumentsPtr arg = (argumentsPtr)argument;
     char* msg;
+    char* answer;
     int sock;
 
     pthread_mutex_lock(&mutex);
@@ -141,12 +144,17 @@ void* threadFunction(void* argument)
         }
         pthread_mutex_unlock(&mutex);
         if (msg != NULL) {
-            printf("%s \n", msg);
             msgDecomposer(sock, msg, 20);
-            printf("prin \n");
-            msg = msgComposer(sock, 20);
-            printf("meta\n");
+            answer = msgComposer(sock, 20);
+            pthread_mutex_lock(&mutexPrint);
             printf("%s \n", msg);
+            printf("%s \n", answer);
+            pthread_mutex_unlock(&mutexPrint);
+            // printf("prin");
+            // while (!strcmp((msg = msgComposer(sock, 20)), "finished!"))
+            //     printf("%s \n", msg);
+            // printf("prin");
+            
         }
     }
 }

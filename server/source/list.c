@@ -1,4 +1,5 @@
 #include "../include/list.h"
+#include "../include/message.h"
 
 workerInfoPtr addPortInList(workerInfoPtr head, int portNum)
 {
@@ -11,6 +12,7 @@ workerInfoPtr addPortInList(workerInfoPtr head, int portNum)
     temp->port = portNum;
     temp->countriesList = NULL;
     temp->readyForWork = false;
+    temp->ipAddress = NULL;
     temp->next = NULL;
     
     if (head == NULL)
@@ -58,7 +60,13 @@ bool bufferEmpty(circularBufferPtr Q)
 void bufferInsert(circularBufferPtr Q, int desc)
 {
     QueueNodePtr temp = malloc(sizeof(QueueNode));
+    if (Q->currentSize >= Q->maxBufferSize) {
+        printf("buffer full\n");
+        msgDecomposer(desc, "buffer is full query not answered!", 20);
+        return;
+    }
 
+    Q->currentSize++;
     if (temp == NULL) {
         printf("system has no more space\n");
         return ;
@@ -85,6 +93,7 @@ int bufferRemove(circularBufferPtr Q)
         return -1;
     }
     else {
+        Q->currentSize--;
         temp = Q->head;
         Q->head = temp->next;
         if (Q->head == NULL)
