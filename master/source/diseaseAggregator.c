@@ -30,6 +30,8 @@ int forkAssignFunctionality(int bufferSize, int numWorkers, char* inputDirectory
                 return -1;
             }
             free(inputDirectory);
+            free(serverIP);
+            free(serverPort);
             destroyList(workersList);
             exit(0);
         }
@@ -44,7 +46,7 @@ int forkAssignFunctionality(int bufferSize, int numWorkers, char* inputDirectory
         perror("diseaseAggregator failed");
         return -1;
     }
-    
+
     for (int i=0; i<numWorkers; i++)
         wait(NULL);
 
@@ -116,6 +118,9 @@ int diseaseAggregator(workerInfoPtr workersList, int numWorkers, int bufferSize,
         temp = temp->next;
     }
     destroyList(workersList);
+    free(inputDirectory);
+    // free(serverPort);
+    // free(serverIP);
     return 0;
 }
 

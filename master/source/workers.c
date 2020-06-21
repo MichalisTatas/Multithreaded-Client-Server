@@ -71,6 +71,7 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
         return -1;
     }
     strcpy(serverIP, msg);
+    free(msg);
 
     // get serverPort
     if ((msg = msgComposer(readDesc, bufferSize)) == NULL) {
@@ -84,6 +85,7 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
         return -1;
     }
     strcpy(serverPort, msg);
+    free(msg);
 
     HashTablePtr diseaseHashtable;
     patientPtr patientListHead = NULL;
@@ -203,6 +205,9 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
                         perror("createLogFile failed");
                         return -1;
                     }
+                    // free(s);
+                    free(serverIP);
+                    free(serverPort);
                     freeDataStructures(&diseaseHashtable, &countryList, &completeDateList, &patientListHead);
                     kill(getppid(), SIGCHLD);
                     return 0;
@@ -213,6 +218,8 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
                         perror("createLogFile failed");
                         return -1;
                     }
+                    free(serverIP);
+                    free(serverPort);
                     freeDataStructures(&diseaseHashtable, &countryList, &completeDateList, &patientListHead);
                     kill(getppid(), SIGCHLD);
                     return 0;
@@ -240,9 +247,13 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
 
         if (queriesAnswerer(msg, bufferSize, diseaseHashtable, countryList, patientListHead, clientStatisticsDesc) == 1)
             break;
+
         free(msg);
     }
 
+
+    free(serverIP);
+    free(serverPort);
     free(msg);
     freeDataStructures(&diseaseHashtable, &countryList, &completeDateList, &patientListHead);
     return 0;         // return here and exit in forkassignFunctionality to free remaining memory

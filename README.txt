@@ -1,4 +1,6 @@
-mnimi
+client me valgrind de nteleiwnei
+
+mnimi cntrl c sto server gia mnimi
 
 PREPEI NA DW IP WORKER na to stelnw oci 0.0.0.0
 na stelnw to ip kai na briskw ekeini tin stigmi an prepei na to steilw 

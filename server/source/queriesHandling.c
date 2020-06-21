@@ -71,7 +71,7 @@ int querieAnswer(workerInfoPtr workersList, const char* querie, int readDesc, in
     sigset_t emptyset, blockset;
     int bufferSize = 20;
     fd_set readfds;
-    char* apantisi = malloc(1000);
+    char answer[1000] = {0};
     sigemptyset(&blockset);
     sigaddset(&blockset, SIGUSR1);
     sigaddset(&blockset, SIGINT);
@@ -119,8 +119,8 @@ int querieAnswer(workerInfoPtr workersList, const char* querie, int readDesc, in
                     if (!strcmp(querie, "/diseaseFrequency"))
                         diseaseFrequency =  diseaseFrequency + atoi(msg);
                     else {
-                        strcat(apantisi, msg);
-                        strcat(apantisi, "\n");
+                        strcat(answer, msg);
+                        strcat(answer, "\n");
                     }
                     free(msg);
                 }
@@ -136,9 +136,10 @@ int querieAnswer(workerInfoPtr workersList, const char* querie, int readDesc, in
             }
             if (allReady) {
                 if (!strcmp(querie, "/diseaseFrequency"))
-                    sprintf(apantisi, "%d\n", diseaseFrequency);
+                    sprintf(answer, "%d\n", diseaseFrequency);
 
-                msgDecomposer(descriptor, apantisi, 20);
+                msgDecomposer(descriptor, answer, 20);
+                // free(answer);
                 return 0;
             }
         }
@@ -152,11 +153,12 @@ int querieAnswer(workerInfoPtr workersList, const char* querie, int readDesc, in
 
             if (!strcmp(msg, "finished!")) {
                 free(msg);
-                msgDecomposer(descriptor, apantisi, 20);
+                msgDecomposer(descriptor, answer, 20);
+                // free(answer);
                 return 0;
             }
 
-            strcat(apantisi, msg);
+            strcat(answer, msg);
             free(msg);
         }
     }

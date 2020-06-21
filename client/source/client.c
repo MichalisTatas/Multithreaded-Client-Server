@@ -140,7 +140,9 @@ void* threadFunction(void* argument)
         if ((msg = QRemove(arg->Q)) == NULL){
             msgDecomposer(sock, "finished!", 20);
             pthread_mutex_unlock(&mutex);
-            pthread_exit(0);
+            return msg;
+            // free(msg);
+            // pthread_exit(0);
         }
         pthread_mutex_unlock(&mutex);
         if (msg != NULL) {
@@ -148,13 +150,10 @@ void* threadFunction(void* argument)
             answer = msgComposer(sock, 20);
             pthread_mutex_lock(&mutexPrint);
             printf("%s \n", msg);
+            free(msg);
             printf("%s \n", answer);
+            free(answer);
             pthread_mutex_unlock(&mutexPrint);
-            // printf("prin");
-            // while (!strcmp((msg = msgComposer(sock, 20)), "finished!"))
-            //     printf("%s \n", msg);
-            // printf("prin");
-            
         }
     }
 }
@@ -162,6 +161,7 @@ void* threadFunction(void* argument)
 int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
 {
     FILE* filePtr;
+    void *res;
     if ((filePtr = fopen(queryFile, "r")) == NULL) {
         perror("fopen failed");
         return -1;
@@ -178,6 +178,7 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
     while(getline(&line, &len, filePtr) != -1) {
         line = strtok(line, "\n");
         QInsert(arg->Q, line);
+        // free(line);
     }
 
     pthread_t threadsArray[numThreads];
@@ -186,16 +187,20 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
 
     sleep(0.2);           // sleep to make sure all threads lock on the condition variable
     pthread_cond_broadcast(&conditionVariable);
-
-    for (int i=0; i<numThreads; i++){
-        if (pthread_join(threadsArray[i], NULL) != 0) {
+// sleep(0.4);
+    for (int i=0; i<numThreads; i++){           // why =????????????????????????????????
+        if (pthread_join(threadsArray[i], &res) != 0) {
             perror("pthread_join failed");
             return -1;
         }
+        free(res);
     }
+
+    free(arg->servIP);
+    free(arg->Q);
+    free(arg);
     fclose(filePtr);
     free(line);
-    // free(Q);
     return 0;
 }
 

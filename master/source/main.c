@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    free(input_dir);
+    free(serverPort);
+    free(serverIP);
     return 0;
 }
