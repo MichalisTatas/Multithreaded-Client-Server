@@ -6,6 +6,7 @@
 /diseaseFrequency COVID-2019 04-01-1900 06-01-2020
 /diseaseFrequency H1N1 08-01-1900 09-01-2020
 /topk-AgeRanges 3 Austria H1N1 06-01-1900 07-01-2020
+/topk-AgeRanges 3 Albania H1N1 06-01-1900 07-01-2020
 /diseaseFrequency EVD 05-01-1900 09-01-2020 Andorra
 /diseaseFrequency COVID-2019 05-01-1900 08-01-2020 Barbados
 /diseaseFrequency EVD 03-01-1900 09-01-2020
@@ -17,3 +18,33 @@
 /numPatientAdmissions SARSCOV-2 08-01-1900 09-01-2020 Albania
 /diseaseFrequency EVD 08-01-1900 08-01-2020 Austria
 /numPatientDischarges EVD 08-01-1900 08-01-2020 Afghanistan
+/diseaseFrequency FLU-2018 02-01-1900 02-01-2020 Belize
+/searchPatientRecord 150
+/diseaseFrequency SARSCOV-2 08-01-1900 08-01-2020
+/searchPatientRecord 100
+/numPatientDischarges COVID-2019 05-01-1900 08-01-2020 Barbados
+/diseaseFrequency COVID-2019 04-01-1900 06-01-2020
+/diseaseFrequency H1N1 08-01-1900 09-01-2020
+/topk-AgeRanges 3 Austria H1N1 06-01-1900 07-01-2020
+/topk-AgeRanges 3 Albania H1N1 06-01-1900 07-01-2020
+/diseaseFrequency EVD 05-01-1900 09-01-2020 Andorra
+/diseaseFrequency COVID-2019 05-01-1900 08-01-2020 Barbados
+/diseaseFrequency EVD 03-01-1900 09-01-2020
+/diseaseFrequency COVID-2019 03-01-1900 03-01-2020
+/numPatientDischarges H1N1 02-01-1900 08-01-2020 Afghanistan
+/searchPatientRecord 5
+/numPatientAdmissions SARS-1 05-01-1900 09-01-2020
+/searchPatientRecord 10
+/numPatientAdmissions SARSCOV-2 08-01-1900 09-01-2020 Albania
+/diseaseFrequency EVD 08-01-1900 08-01-2020 Austria
+/numPatientDischarges EVD 08-01-1900 08-01-2020 Afghanistan
+/diseaseFrequency FLU-2018 02-01-1900 02-01-2020 Belize
+/searchPatientRecord 150
+/diseaseFrequency SARSCOV-2 08-01-1900 08-01-2020
+/searchPatientRecord 100
+/numPatientDischarges COVID-2019 05-01-1900 08-01-2020 Barbados
+/diseaseFrequency COVID-2019 04-01-1900 06-01-2020
+/diseaseFrequency H1N1 08-01-1900 09-01-2020
+/topk-AgeRanges 3 Austria H1N1 06-01-1900 07-01-2020
+/topk-AgeRanges 3 Albania H1N1 06-01-1900 07-01-2020
+/diseaseFrequency EVD 05-01-1900 09-01-2020 Andorra

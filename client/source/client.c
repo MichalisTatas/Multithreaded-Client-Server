@@ -27,7 +27,7 @@ char* msgComposer(int fileDescriptor, int bufferSize)
             perror("read failed");
             return NULL;
         }
-        memcpy(msgSizeArray + i*bufferSize, buffer, bufferSize); //bufferSize?
+        memcpy(msgSizeArray + i*bufferSize, buffer, bufferSize);
     }
 
     if ((12 % bufferSize)) {
@@ -39,7 +39,7 @@ char* msgComposer(int fileDescriptor, int bufferSize)
     }
 
     int msgSize = strtol(msgSizeArray, NULL, 10);
-    if ((msg = malloc(msgSize)) == NULL) {      // +1 ???
+    if ((msg = malloc(msgSize)) == NULL) {
         perror("malloc failed!");
         return NULL;
     }
@@ -177,14 +177,13 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
     while(getline(&line, &len, filePtr) != -1) {
         line = strtok(line, "\n");
         QInsert(arg->Q, line);
-        // free(line);
     }
 
     pthread_t threadsArray[numThreads];
     for (int i=0; i<numThreads; i++)
         pthread_create(&threadsArray[i], NULL, threadFunction, (void*)arg);
 
-    sleep(0.2);           // sleep to make sure all threads lock on the condition variable
+    sleep(0.4);           // sleep to make sure all threads lock on the condition variable
     pthread_cond_broadcast(&conditionVariable);
 
     for (int i=0; i<numThreads; i++){
@@ -192,8 +191,6 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
             perror("pthread_join failed");
             return -1;
         }
-
-        // free(res);
     }
 
     free(arg->servIP);

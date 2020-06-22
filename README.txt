@@ -1,7 +1,12 @@
-mnimi cntrl c sto server gia mnimi?
-ston server exoun meinei mono oi listes
+Μιχάλης Τατάς
+sdi1700161
 
-buffersize isnt needed anymore so probably i can read write the whole thing
-at once?
+	Το πρόγραμμα είναι χωρισμένο σε τρείς φακέλους master, server, client και ο κάθε ένας απο αυτούς έχει ένα ξεχωριστό Makefile. Κάθε ένα πρόγραμμα απο τα τρία μεταγλωτίζεται με την εντολή make και τρέχει με την εντολή make run είτε με την εντολή make valgrind για τον ελέγχο της μνήμης. Στα προγράμματα master και client δεν υπάρχουν leaks ενω στον server υπάρχουν τα αναμενόμενα αφού το πρόγραμμα τερματίζει με ctrl + c. Τα προγράμματα για να λειτουργήσουν πρέπει να τρέξουν με την εξής σείρα : server -> master -> client
 
-make the return from dead workers send a w etc
+	Αρχικά ο server ξεκινάει όλα τα threads τα οποία περιμένουν να μπεί καποίο filedescriptor στο κυκλικό buffer χωρίς να είναι busy waiting λόγω της χρήσης του mutex σε συνδυασμό με το condition variable. Ύστερα κάνει bind και listen στα queryPortNum και statisticsPortNum. Τα descriptors τους μπαίνουν στην  pselect και ο server περιμένει ένα port να είναι ετοίμο να στείλει. Κάνει accept και τοποθετεί τον descriptor στο κυκλικό buffer αν υπάρχει διαθέσιμος χώρος και καλεί την signal ωστε να ενημερωθεί κάποιο thread οτι μπήκε δουλειά και να ξεμπλοκάρει ενω αν δεν υπάρχει ενημερώνει και απορρίπτει την σύνδεση. Οταν συνδεθεί ένας worker αρχικά στέλνει ενα w για να ξέρει ο server ενω ο client στέλνει ενα c και ο server καλεί την αντίστοιχη συνάρτηση.
+	Η workersFuntion αποθηκεύει τους workers και τα ip τους καθώς και τα port τους ενώ εκτυπώνει και τα στατιστικά που δέχεται.
+	Η clientFunction στελνει το ερώτημα στους workers / στον worker και περιμένει την απάντηση , την οποία στέλνει πίσω στον client.
+
+	O worker συνδέεται στον server στέλνει το αναγνωριστικό w και στην συνέχεια κάνει bind και listen σε ενα socket το οποίο στέλνει και στον server , ύστερα στέλνει τα στατιστικά ενω στην συνέχεια ακούει στο socket και περιμένει κάποιο query απο τον server. Όταν δεχθεί το query καλεί την συνάρτηση queriesAnswerer η οποία βρίσκει την λύση στο ερώτημα ενω στέλνει την απάντηση πίσω στον server.
+
+	Ο client ξεκινάει και φτιάχνει όλα τα threads τα οποία μπλοκάρει με την χρήση ενός condition variable και γεμίζει ενα queue με τα queries . Οταν τελειώσει με την χρήση της συνάρτησης  pthread_cond_broadcast ξεμπλοκάρει ολα τα threads τα οποία προσπαθούν ταυτόχρονα να συνδεθούν στον server. Υστερα αφού είναι επιτυχής η σύνδεση στέλνει queries μέχρι να αδειάσει το queue ενω περιμένει και τις απαντήσεις απο τον server τις οποίες και εκτυπώνει.

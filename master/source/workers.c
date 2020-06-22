@@ -142,6 +142,7 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
         perror("listen failed");
         return -1;
     }
+
     struct sockaddr_in sin;
     socklen_t s = sizeof(struct sockaddr_in);
     getsockname(serverQueriesDesc, (struct sockaddr*)&sin, &s);
@@ -155,11 +156,11 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
     }
 
     // send ip address
-    char* m = inet_ntoa(sin.sin_addr);
-    if (msgDecomposer(sock, m, 20) == -1) {
-        printf("msgDecomposer failed\n");
-        return -1;
-    }
+    // char* m = inet_ntoa(sin.sin_addr);
+    // if (msgDecomposer(sock, m, 20) == -1) {
+    //     printf("msgDecomposer failed\n");
+    //     return -1;
+    // }
 
     countryPtr cntry = countryList;
     while (cntry != NULL) {
@@ -188,9 +189,8 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
         perror("msgDecomposer failed");
         return -1;
     }
-    // send message to server now
-    int addressSize = sizeof(struct sockaddr_in);
 
+    int addressSize = sizeof(struct sockaddr_in);
     while(true) {
         
         FD_ZERO(&readfds);

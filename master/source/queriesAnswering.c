@@ -179,6 +179,7 @@ char* topkAgeRanges(int k, char* country, char* disease, datePtr date1, datePtr 
             age4 = topkAgeRangesHelper(curr->tree, date1, date2, country, 60, 120);
             break;
         }
+        curr = curr->next;
     }
 
     int all = age1+age2+age3+age4;

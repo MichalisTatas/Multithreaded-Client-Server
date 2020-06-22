@@ -24,7 +24,7 @@ $(EXECUTABLE): $(OBJ)
 .PHONY: clean run valgrind
 
 run:
-	./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 10
+	./$(EXECUTABLE) -q 3002 -s 3001 -w 20 -b 10
 
 valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all --fair-sched=yes ./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 20

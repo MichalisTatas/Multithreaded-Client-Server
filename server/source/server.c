@@ -6,13 +6,6 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t conditionVariable = PTHREAD_COND_INITIALIZER; 
 
-volatile sig_atomic_t signalHandlerNumber;
-
-static void handler(int sig)
-{
-    signalHandlerNumber = sig;
-}
-
 int workerFunction(pthreadArguments* parameters, int descriptor)
 {
     char* msg = msgComposer(descriptor, 20);
@@ -21,10 +14,16 @@ int workerFunction(pthreadArguments* parameters, int descriptor)
     worker = addPortInList(worker, port);
     free(msg);
 
-    msg = msgComposer(descriptor, 20);
-    worker->ipAddress = malloc(strlen(msg) + 1);
-    strcpy(worker->ipAddress, msg);
-    free(msg);
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    getsockname(descriptor, (struct sockaddr *)&addr, &len);
+    worker->ipAddress = malloc(strlen(inet_ntoa(addr.sin_addr)) + 1);
+    strcpy(worker->ipAddress, inet_ntoa(addr.sin_addr));
+
+    // msg = msgComposer(descriptor, 20);
+    // worker->ipAddress = malloc(strlen(msg) + 1);
+    // strcpy(worker->ipAddress, msg);
+    // free(msg); 
 
     while (true) {
         if (!strcmp((msg = msgComposer(descriptor, 20)), "finished writing countries!"))
@@ -170,6 +169,7 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
                 return -1;
             }
             pthread_mutex_lock(&mutex);
+            // printf("%s \n", inet_ntoa(clientStatisticsAddress.sin_addr));
             bufferInsert(parameters->circularBuff, clientStatisticsDesc);
             pthread_cond_signal(&conditionVariable);
             pthread_mutex_unlock(&mutex);

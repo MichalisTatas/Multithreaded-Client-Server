@@ -157,6 +157,44 @@ workerInfoPtr handleChildDeath(workerInfoPtr workersList, int bufferSize, char* 
         return NULL;
     }
 
+    if (msgDecomposer(temp->write, "w", bufferSize) == -1) {
+        perror("msgDecomposer failed");
+        return NULL;
+    }
+
+    int serverQueriesDesc, clientStatisticsDesc;
+    struct sockaddr_in serverQueriesAddress,clientStatisticsAddress;
+
+    if ((serverQueriesDesc = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket failed");
+        return -1;
+    }
+
+    serverQueriesAddress.sin_family = AF_INET;
+    serverQueriesAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverQueriesAddress.sin_port = htons(0);
+    
+    if (bind(serverQueriesDesc, (struct sockaddr*)&serverQueriesAddress, sizeof(struct sockaddr_in)) == -1) {
+        perror("bind failed");
+        return -1;
+    }
+    if (listen(serverQueriesDesc, QSIZE) == -1) {
+        perror("listen failed");
+        return -1;
+    }
+
+    struct sockaddr_in sin;
+    socklen_t s = sizeof(struct sockaddr_in);
+    getsockname(serverQueriesDesc, (struct sockaddr*)&sin, &s);
+
+
+    char buff[12];
+    sprintf(buff, "%d", ntohs(sin.sin_port));
+    if (msgDecomposer(sock, buff, 20) == -1) {
+        printf("msgDecomposer failed\n");
+        return -1;
+    }
+
     countryPtr country = temp->countriesList;
     while (country != NULL) {
         if (msgDecomposer(temp->write, country->name, bufferSize) == -1) {
