@@ -6,19 +6,33 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t conditionVariable = PTHREAD_COND_INITIALIZER; 
 
+volatile sig_atomic_t signalHandlerNumber;
+
+static void handler(int sig)
+{
+    signalHandlerNumber = sig;
+}
+
 int workerFunction(pthreadArguments* parameters, int descriptor)
 {
     char* msg = msgComposer(descriptor, 20);
     int port = atoi(msg);
-
     workerInfoPtr worker = NULL;
     worker = addPortInList(worker, port);
+    free(msg);
+
+    msg = msgComposer(descriptor, 20);
+    worker->ipAddress = malloc(strlen(msg) + 1);
+    strcpy(worker->ipAddress, msg);
+    free(msg);
 
     while (true) {
         if (!strcmp((msg = msgComposer(descriptor, 20)), "finished writing countries!"))
             break;
         addCountryInList(&worker->countriesList, msg);
+        free(msg);
     }
+    free(msg);
     pthread_mutex_lock(&mutex);
     worker->next = parameters->workersList;
     parameters->workersList = worker;
@@ -27,8 +41,11 @@ int workerFunction(pthreadArguments* parameters, int descriptor)
     while (true) {
         if (!strcmp((msg = msgComposer(descriptor, 20)), "finished!"))
             break;
-        printf("%s \n",msg);  // print the statistics or not?
+        printf("%s \n",msg);
+        free(msg);
     }
+
+    free(msg);
     return 0;
 }
 
@@ -41,6 +58,8 @@ int clientFunction(pthreadArguments* parameters, int descriptor)
             break;
         queriesHandler(parameters->workersList, msg, descriptor);
     }
+
+    free(msg);
     return 0;
 }
 
@@ -66,8 +85,10 @@ void* threadFunction(void* argument)
                 printf("error in thread function!");
                 return NULL;
             }
+            // free(msg);
         }
     }
+    pthread_exit(0);
 }
 
 int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numThreads)
@@ -168,12 +189,6 @@ int serverRun(int statisticsPortNum, int queryPortNum, int bufferSize, int numTh
 
 
 
-    for (int i=0; i<numThreads; i++){
-        if (pthread_join(threadsArray[i], NULL) != 0) {
-            perror("pthread_join failed");
-            return -1;
-        }
-    }
 
     return 0;
 }

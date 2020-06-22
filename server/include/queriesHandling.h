@@ -11,7 +11,7 @@
 #include "message.h"
 
 int querieAnswer(workerInfoPtr, const char* querie, int, int);
-void sendQuerie(workerInfoPtr, const char*, int, int);
+void sendQuerie(workerInfoPtr, const char*, char*, int);
 int queriesHandler(workerInfoPtr,const char*, int);
 int selectWorker(const workerInfoPtr, char*);
 void listCountriesFunction(workerInfoPtr);

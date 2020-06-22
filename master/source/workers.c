@@ -146,17 +146,17 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
     socklen_t s = sizeof(struct sockaddr_in);
     getsockname(serverQueriesDesc, (struct sockaddr*)&sin, &s);
 
-    // nma top steilw kai auto
-    // char* m = inet_ntoa(sin.sin_addr);
-    // printf("%s \n", m);
-    // if (msgDecomposer(sock, m, 20) == -1) {
-    //     printf("msgDecomposer failed\n");
-    //     return -1;
-    // }
 
     char buff[12];
     sprintf(buff, "%d", ntohs(sin.sin_port));
     if (msgDecomposer(sock, buff, 20) == -1) {
+        printf("msgDecomposer failed\n");
+        return -1;
+    }
+
+    // send ip address
+    char* m = inet_ntoa(sin.sin_addr);
+    if (msgDecomposer(sock, m, 20) == -1) {
         printf("msgDecomposer failed\n");
         return -1;
     }

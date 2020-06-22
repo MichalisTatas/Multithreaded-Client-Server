@@ -104,7 +104,7 @@ int bufferRemove(circularBufferPtr Q)
     }
 }
 
-void QDestroy(circularBufferPtr Q)
+void bufferDestroy(circularBufferPtr Q)
 {
     QueueNodePtr temp;
     while (Q->head != NULL) {
@@ -113,4 +113,24 @@ void QDestroy(circularBufferPtr Q)
         free(temp);
     }
     free(Q);
+}
+
+void destroyCountryList(countryPtr head)
+{
+    if (head == NULL)
+        return;
+    destroyCountryList(head->next);
+    // if (head->statistics != NULL)
+    //     freeDateStatistics(head->statistics);
+    free(head->name);
+    free(head);
+}
+
+void destroyList(workerInfoPtr head)
+{
+    if (head == NULL)
+        return;
+    destroyList(head->next);
+    destroyCountryList(head->countriesList);
+    free(head);
 }

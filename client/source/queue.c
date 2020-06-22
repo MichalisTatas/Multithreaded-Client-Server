@@ -51,6 +51,7 @@ char* QRemove(QueuePtr Q)
             Q->tail = NULL;
         char* query = malloc(strlen(temp->item) + 1);
         strcpy(query, temp->item);
+        free(temp->item);
         free(temp);
         return query;
     }

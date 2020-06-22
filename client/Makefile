@@ -27,7 +27,7 @@ run:
 	./$(EXECUTABLE) -q queryFile -w 5 -sp 3002 -sip 127.0.0.1
 
 valgrind:
-	valgrind --leak-check=full --show-leak-kinds=all ./$(EXECUTABLE) -q queryFile -w 5 -sp 3002 -sip 127.0.0.1
+	valgrind --leak-check=full --show-leak-kinds=all --fair-sched=yes ./$(EXECUTABLE) -q queryFile -w 5 -sp 3002 -sip 127.0.0.1
 
 clean:
 	rm -f $(ODIR)/*.o

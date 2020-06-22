@@ -27,7 +27,7 @@ run:
 	./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 10
 
 valgrind:
-	valgrind --leak-check=full --show-leak-kinds=all ./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 20
+	valgrind --leak-check=full --show-leak-kinds=all --fair-sched=yes ./$(EXECUTABLE) -q 3002 -s 3001 -w 5 -b 20
 
 clean:
 	rm -f $(ODIR)/*.o

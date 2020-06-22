@@ -50,3 +50,4 @@ void bufferDestroy(circularBufferPtr);
 void bufferInit(circularBufferPtr);
 void bufferInsert(circularBufferPtr, int);
 int bufferRemove(circularBufferPtr);
+void destroyList(workerInfoPtr);

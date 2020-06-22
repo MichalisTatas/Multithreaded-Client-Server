@@ -138,11 +138,10 @@ void* threadFunction(void* argument)
     while (true) {
         pthread_mutex_lock(&mutex);
         if ((msg = QRemove(arg->Q)) == NULL){
-            msgDecomposer(sock, "finished!", 20);
             pthread_mutex_unlock(&mutex);
-            return msg;
-            // free(msg);
-            // pthread_exit(0);
+            msgDecomposer(sock, "finished!", 20);
+            free(msg);
+            pthread_exit(0);
         }
         pthread_mutex_unlock(&mutex);
         if (msg != NULL) {
@@ -187,13 +186,14 @@ int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
 
     sleep(0.2);           // sleep to make sure all threads lock on the condition variable
     pthread_cond_broadcast(&conditionVariable);
-// sleep(0.4);
-    for (int i=0; i<numThreads; i++){           // why =????????????????????????????????
-        if (pthread_join(threadsArray[i], &res) != 0) {
+
+    for (int i=0; i<numThreads; i++){
+        if (pthread_join(threadsArray[i], NULL) != 0) {
             perror("pthread_join failed");
             return -1;
         }
-        free(res);
+
+        // free(res);
     }
 
     free(arg->servIP);
