@@ -187,7 +187,6 @@ int queriesHandler(workerInfoPtr workersList,const char* querie, int descriptor)
 {
     wordexp_t p;
     wordexp(querie, &p, 0);
-    int bufferSize = 20;
 
     if (!strcmp(p.we_wordv[0], "/diseaseFrequency")) {
         if (p.we_wordc == 4) {

@@ -17,7 +17,7 @@
 #include "queriesAnswering.h"
 
 
-int workersFunction(int, char*, int);
+int workersFunction(int, char*);
 countryPtr setDataStructures(HashTablePtr*, countryPtr, patientPtr*, char*, int, int);
 countryPtr setNewDataStructures(HashTablePtr*, countryPtr, countryPtr, patientPtr*,char*);
 void updateStatistics(countryPtr, patientPtr, char*, char*);

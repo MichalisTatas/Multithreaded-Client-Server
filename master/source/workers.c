@@ -9,7 +9,7 @@ static void handler(int sig)
     signalHandlerNumber = sig;
 }
 
-int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
+int workersFunction(int bufferSize, char* inputDirectory)
 {
     char* serverIP;
     char* serverPort;
@@ -154,13 +154,6 @@ int workersFunction(int bufferSize, char* inputDirectory, int workersNum)
         printf("msgDecomposer failed\n");
         return -1;
     }
-
-    // send ip address
-    // char* m = inet_ntoa(sin.sin_addr);
-    // if (msgDecomposer(sock, m, 20) == -1) {
-    //     printf("msgDecomposer failed\n");
-    //     return -1;
-    // }
 
     countryPtr cntry = countryList;
     while (cntry != NULL) {

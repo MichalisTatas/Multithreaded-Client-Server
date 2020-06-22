@@ -160,7 +160,6 @@ void* threadFunction(void* argument)
 int clientRun(char* queryFile, int numThreads, int servPort, char* servIP)
 {
     FILE* filePtr;
-    void *res;
     if ((filePtr = fopen(queryFile, "r")) == NULL) {
         perror("fopen failed");
         return -1;

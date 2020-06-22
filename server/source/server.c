@@ -20,11 +20,6 @@ int workerFunction(pthreadArguments* parameters, int descriptor)
     worker->ipAddress = malloc(strlen(inet_ntoa(addr.sin_addr)) + 1);
     strcpy(worker->ipAddress, inet_ntoa(addr.sin_addr));
 
-    // msg = msgComposer(descriptor, 20);
-    // worker->ipAddress = malloc(strlen(msg) + 1);
-    // strcpy(worker->ipAddress, msg);
-    // free(msg); 
-
     while (true) {
         if (!strcmp((msg = msgComposer(descriptor, 20)), "finished writing countries!"))
             break;

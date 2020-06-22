@@ -25,7 +25,7 @@ int forkAssignFunctionality(int bufferSize, int numWorkers, char* inputDirectory
             return -1;
         }
         else if (pid == 0) {
-            if (workersFunction(bufferSize, inputDirectory, numWorkers) == -1) {   //maybe use exec to do this
+            if (workersFunction(bufferSize, inputDirectory) == -1) {   //maybe use exec to do this
                 perror("workersFunction failed");
                 return -1;
             }
@@ -119,8 +119,6 @@ int diseaseAggregator(workerInfoPtr workersList, int numWorkers, int bufferSize,
     }
     destroyList(workersList);
     free(inputDirectory);
-    // free(serverPort);
-    // free(serverIP);
     return 0;
 }
 
@@ -141,7 +139,7 @@ workerInfoPtr handleChildDeath(workerInfoPtr workersList, int bufferSize, char* 
         return NULL;
     }
     else if (pid == 0) {
-        if (workersFunction(bufferSize, inputDirectory, numWorkers) == -1) {
+        if (workersFunction(bufferSize, inputDirectory) == -1) {
             perror("workersFunction failed");
             return NULL;
         }
@@ -160,39 +158,6 @@ workerInfoPtr handleChildDeath(workerInfoPtr workersList, int bufferSize, char* 
     if (msgDecomposer(temp->write, "w", bufferSize) == -1) {
         perror("msgDecomposer failed");
         return NULL;
-    }
-
-    int serverQueriesDesc, clientStatisticsDesc;
-    struct sockaddr_in serverQueriesAddress,clientStatisticsAddress;
-
-    if ((serverQueriesDesc = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("socket failed");
-        return -1;
-    }
-
-    serverQueriesAddress.sin_family = AF_INET;
-    serverQueriesAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-    serverQueriesAddress.sin_port = htons(0);
-    
-    if (bind(serverQueriesDesc, (struct sockaddr*)&serverQueriesAddress, sizeof(struct sockaddr_in)) == -1) {
-        perror("bind failed");
-        return -1;
-    }
-    if (listen(serverQueriesDesc, QSIZE) == -1) {
-        perror("listen failed");
-        return -1;
-    }
-
-    struct sockaddr_in sin;
-    socklen_t s = sizeof(struct sockaddr_in);
-    getsockname(serverQueriesDesc, (struct sockaddr*)&sin, &s);
-
-
-    char buff[12];
-    sprintf(buff, "%d", ntohs(sin.sin_port));
-    if (msgDecomposer(sock, buff, 20) == -1) {
-        printf("msgDecomposer failed\n");
-        return -1;
     }
 
     countryPtr country = temp->countriesList;

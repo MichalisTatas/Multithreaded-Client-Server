@@ -31,7 +31,3 @@ valgrind:
 
 clean:
 	rm -f $(ODIR)/*.o
-	rm -f $(LDIR)/*
-	rm diseaseAggregator
-	rm statistics.txt
-	rm newStatistics.txt
